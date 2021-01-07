@@ -1,2 +1,2 @@
-# ksoft-lukifly-telemetry
+# flysoft-telemetry
 Telemetry interface using Wifi ESP WeMos Arduino for iNav 
