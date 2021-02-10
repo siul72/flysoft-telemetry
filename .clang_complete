@@ -1,5 +1,8 @@
 -I/home/luki/workspace/flysoft-telemetry/include
 -I/home/luki/workspace/flysoft-telemetry/src
+-I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src
+-I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ArduinoJson/src
+-I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/MAVLink v2 C library
 -I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/AsyncMqttClient/src
 -I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ESPAsyncTCP/src
 -I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ESP8266Ping/src
@@ -15,7 +18,6 @@
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/cores/esp8266
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lwip2/include
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/variants/d1_mini
--I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/MAVLink v2 C library
 -I/home/luki/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/PixhawkArduinoMAVLink/src
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/ArduinoOTA
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/EEPROM
@@ -37,7 +39,6 @@
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/SPI
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/SPISlave/src
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/Servo/src
--I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/TFT_Touch_Shield_V2
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/Ticker/src
 -I/home/luki/.platformio/packages/framework-arduinoespressif8266/libraries/Wire

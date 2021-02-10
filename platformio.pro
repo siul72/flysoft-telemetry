@@ -8,6 +8,9 @@ else {
 
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/include"
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/src"
+INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src"
+INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ArduinoJson/src"
+INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/MAVLink v2 C library"
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/AsyncMqttClient/src"
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ESPAsyncTCP/src"
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/ESP8266Ping/src"
@@ -23,7 +26,6 @@ INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/cores/esp8266"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/tools/sdk/lwip2/include"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/variants/d1_mini"
-INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/MAVLink v2 C library"
 INCLUDEPATH += "$${HOMEDIR}/workspace/flysoft-telemetry/.pio/libdeps/d1_mini/PixhawkArduinoMAVLink/src"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/ArduinoOTA"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/EEPROM"
@@ -45,7 +47,6 @@ INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/SPI"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/SPISlave/src"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/Servo/src"
-INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/SoftwareSerial/src"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/TFT_Touch_Shield_V2"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/Ticker/src"
 INCLUDEPATH += "$${HOMEDIR}/.platformio/packages/framework-arduinoespressif8266/libraries/Wire"
@@ -76,8 +77,11 @@ DEFINES += "VTABLES_IN_FLASH"
 
 OTHER_FILES += platformio.ini
 
+HEADERS += src/flysoftmavlink.h
 SOURCES += src/utils.cpp
 HEADERS += src/utils.h
+SOURCES += src/flysoftmavlink.cpp
+HEADERS += src/queue.h
 SOURCES += src/main.cpp
 
 CONFIG += c++11

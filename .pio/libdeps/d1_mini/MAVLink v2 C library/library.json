@@ -1,0 +1,12 @@
+{
+  "name": "MAVLink v2 C library",
+  "keywords": "mavlink, uav, drone, ardupilot",
+  "description": "Official reference C / C++ library for the v2 protocol",
+  "repository":
+  {
+    "type": "git",
+    "url": "https://github.com/mavlink/c_library_v2.git"
+  },
+  "version": "2.0",
+  "platforms": "*"
+}

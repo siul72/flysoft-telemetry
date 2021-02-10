@@ -1,9 +1,8 @@
-#include <Arduino.h>
 #include <WiFiManager.h> // https://github.com/tzapu/WiFiManager
 #include <TaskScheduler.h>
 #include <ESP8266Ping.h>
 #include <AsyncMqttClient.h>
-#include <SoftwareSerial.h>
+#include "flysoftmavlink.h"
 #include "utils.h"
 
 #define  LED_WATCHDOG 2
@@ -17,15 +16,19 @@ void wifiConnect();
 void connectToMqtt();
 void toggleLed();
 void mavlinkThread();
+void mavlinkGetMessages();
+
 
 Task readConsoleTask(1000, TASK_FOREVER, &consoleThread);
 Task parseConsoleRxTask(40, TASK_FOREVER, &parseConsoleRxFrame);
 Task wifiConnectTask(1000, TASK_ONCE, &wifiConnect);
-Task mqttReconnectTask(2000, TASK_ONCE, &connectToMqtt);
-Task heartbeatTask(1000, TASK_FOREVER, &toggleLed);
-Task readMavlinkPortTask(40, TASK_FOREVER, &mavlinkThread);
+Task mqttReconnectTask(1000, TASK_ONCE, &connectToMqtt);
+//Task heartbeatTask(1000, TASK_FOREVER, &toggleLed);
+Task readMavlinkPortTask(100, TASK_FOREVER, &mavlinkThread);
+Task mavlinkGetMessagesTask(10, TASK_FOREVER, &mavlinkGetMessages);
 
-SoftwareSerial mavlinkSerial(MAVLINK_RX_PIN, MAVLINK_TX_PIN, true);
+FlysoftMavlink mav = FlysoftMavlink(MAVLINK_RX_PIN, MAVLINK_TX_PIN,1200);
+
 WiFiManager wm;
 WiFiManagerParameter mqtt_port_param; // global param ( for non blocking w params )
 WiFiManagerParameter mqtt_address_param; // global param ( for non blocking w params )
@@ -48,37 +51,37 @@ void testPing(String host){
 void onMqttConnect(bool sessionPresent) {
   mqttReconnectTask.disable();
   runner.deleteTask(mqttReconnectTask);
-  heartbeatTask.enable();
+  //heartbeatTask.setInterval(1000);
   digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
   Serial.println("Connected to MQTT.");
   Serial.println("Session present: ");
   Serial.println(sessionPresent);
 
-  runner.addTask(readMavlinkPortTask);
+  //my_mavlink_frame_pointer = 0;
+  mav.begin();
   readMavlinkPortTask.enable();
-  readMavlinkPortTask.setIterations(TASK_FOREVER);
-  Serial.println("added and enable readMavlinkPortTask");
-
+  mavlinkGetMessagesTask.enable();
+  Serial.println("added enable readMavlinkPortTask");
 
 }
 
 void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
   digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
   Serial.printf("Disconnected from MQTT. %d\n", (int)reason);
-  heartbeatTask.disable();
+  //heartbeatTask.disable();
 
   if (WiFi.isConnected()) {
 
     runner.addTask(mqttReconnectTask);
     mqttReconnectTask.setIterations(TASK_ONCE);
-    mqttReconnectTask.enable();
+    mqttReconnectTask.setInterval(1000);
     Serial.println("mqttReconnectTask Start");
   }
 
   if(readMavlinkPortTask.isEnabled()){
     readMavlinkPortTask.disable();
-    runner.deleteTask(readMavlinkPortTask);
-    Serial.println("remove readMavlinkPortTask");
+    mavlinkGetMessagesTask.disable();
+    Serial.println("disable readMavlinkPortTask");
   }
 
 }
@@ -130,6 +133,7 @@ void mqttPublish(String payload) {
   mqttClient.publish("flysoft/telemetry/mavlink", 0, true, payload.c_str());
 
 }
+
 /*****************************************************************
 *  Task callback definition
 */
@@ -176,40 +180,6 @@ void consoleThread() {
 
 }
 
-void mavlinkThread() {
-
-  bool rcv_done = false;
-
-  String frame = "";
-  while(mavlinkSerial.available()>0){
-    if (!rcv_done){
-      char str[18] = "";
-      Utils::timeToString(str, sizeof(str));
-      //Serial.print(str);
-      frame = frame +"<frame timestamp=\""+str+"\">";
-    }
-//    byte b=mavlinkSerial.read();
-//    //delay(1);
-//    char tmp[4];
-//    sprintf(tmp, "%02x", b);
-//    frame = frame + tmp + ':';
-    char c = mavlinkSerial.read();
-    frame = frame + c;
-    rcv_done = true;
-  }
-
-  if (rcv_done) {
-    Serial.println("new frame on queue");
-    frame = frame +"</frame>";
-    //rxQueue.push(frame);
-    Serial.println(frame);
-    mqttPublish(frame);
-    digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
-
-  }
-
-}
-
 void parseConsoleRxFrame(){
     Serial.println(">parseReceivedFrame");
     parseConsoleRxTask.disable();
@@ -239,39 +209,78 @@ void parseConsoleRxFrame(){
 
       if (strcmp(myFunctionList[6].c_str(), FRAME_END) != 0){
         sprintf(msg, "WRONG FRAME END expect=%s got=%s", FRAME_END, myFunctionList[6].c_str());
-  	  Serial.println(msg);
+      Serial.println(msg);
         continue;
       }
 
-  	//function
-  	sprintf(msg, "FUNCTION %s", myFunctionList[3].c_str());
-  	Serial.println(msg);
-  	int function = atoi(myFunctionList[3].c_str());
+    //function
+    sprintf(msg, "FUNCTION %s", myFunctionList[3].c_str());
+    Serial.println(msg);
+    int function = atoi(myFunctionList[3].c_str());
 
-  	switch(function){
-  			case 1:
+    switch(function){
+            case 1:
 
-  			break;
-  			case 2:
+            break;
+            case 2:
 
-  			break;
-  			case 3:
+            break;
+            case 3:
 
-  			break;
+            break;
         case 99:
           sprintf(msg, "FUNCTION Reset Wifi Settings called");
           Serial.println(msg);
           wm.resetSettings();
-          wifiConnectTask.enable();
+          wifiConnectTask.setInterval(1000);
 
-  			break;
+            break;
 
-  			default:
-  				sprintf(msg, "FUNCTION %d unsuported", function);
-  				Serial.println(msg);
-  				continue;
-  	}
+            default:
+                sprintf(msg, "FUNCTION %d unsuported", function);
+                Serial.println(msg);
+                continue;
+    }
   }
+}
+
+void mavlinkThread() {
+    Serial.println(">>>mavlinkThread");
+    readMavlinkPortTask.disable();
+    mav.getStream();
+    readMavlinkPortTask.enableDelayed(40);
+    Serial.println("<<<mavlinkThread");
+}
+
+void mavlinkGetMessages(){
+    Serial.println(">>>mavlinkGetMessages");
+    mavlinkGetMessagesTask.disable();
+    std::vector<String*> messages;
+    mav.getMessages(&messages);
+    if (messages.size() >0){
+        for(String* f : messages){
+            mqttPublish(*f);
+            delete f;
+        }
+        messages.clear();
+    } else {
+        Serial.println("Empty messages");
+    }
+
+    //mavlinkGetMessagesTask.enableDelayed(10); //good for 9600 baud
+    mavlinkGetMessagesTask.enableDelayed(80);
+    Serial.println("<<<mavlinkGetMessages");
+}
+
+int16_t findStartChar(char * buffer, char c){
+
+    for (uint32_t i = 0; i < strlen(buffer); i++){
+        if (buffer[i] == c){
+            return i;
+        }
+    }
+
+    return -1;
 }
 
 String getParam(String name){
@@ -312,10 +321,10 @@ void wifiConnect() {
       //Serial.println("connected1");
       IPAddress ip;
       ip.fromString(mqtt_address_param.getValue());
-      Serial.println("connected 2");
+      //Serial.println("connected 2");
       //String mqtt_port_string = getParam("mqtt_port_id");
       mqtt_port = atoi(mqtt_port_param.getValue());
-      Serial.println("connected 3");
+      //Serial.println("connected 3");
       sprintf(msg, "Server address %s:%d", mqtt_address.c_str(), mqtt_port);
       Serial.println(msg);
       mqttClient.setServer(ip, mqtt_port);
@@ -333,14 +342,16 @@ void saveParamCallback(){
   Serial.println("PARAM mqtt_port_id = " + getParam("mqtt_port_id"));
 }
 
- void setup() {
+void setup() {
        pinMode(LED_WATCHDOG, OUTPUT);
        pinMode(MAVLINK_RX_PIN, INPUT);
        pinMode(MAVLINK_TX_PIN, OUTPUT);
        digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
        Serial.begin(115200);
-       mavlinkSerial.begin(57600);
+
        Serial.println("start logging");
+
+
        mqttClient.onConnect(onMqttConnect);
        mqttClient.onDisconnect(onMqttDisconnect);
        mqttClient.onSubscribe(onMqttSubscribe);
@@ -354,11 +365,12 @@ void saveParamCallback(){
        runner.addTask(wifiConnectTask);
        wifiConnectTask.enable();
        Serial.println("added and enable wifiConnectTask");
-       runner.addTask(readConsoleTask);
-       readConsoleTask.enable();
-       runner.addTask(parseConsoleRxTask);
+       //runner.addTask(readConsoleTask);
+       //readConsoleTask.setInterval(1000);
+       //runner.addTask(parseConsoleRxTask);
        runner.addTask(mqttReconnectTask);
-       runner.addTask(heartbeatTask);
+       runner.addTask(readMavlinkPortTask);
+       runner.addTask(mavlinkGetMessagesTask);
 
        Serial.println("FlySoft telemetry started");
 
