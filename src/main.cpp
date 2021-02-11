@@ -27,7 +27,7 @@ Task mqttReconnectTask(1000, TASK_ONCE, &connectToMqtt);
 Task readMavlinkPortTask(100, TASK_FOREVER, &mavlinkThread);
 Task mavlinkGetMessagesTask(10, TASK_FOREVER, &mavlinkGetMessages);
 
-FlysoftMavlink mav = FlysoftMavlink(MAVLINK_RX_PIN, MAVLINK_TX_PIN,1200);
+FlysoftMavlink mav = FlysoftMavlink(MAVLINK_RX_PIN, MAVLINK_TX_PIN,2400);
 
 WiFiManager wm;
 WiFiManagerParameter mqtt_port_param; // global param ( for non blocking w params )
@@ -268,7 +268,8 @@ void mavlinkGetMessages(){
     }
 
     //mavlinkGetMessagesTask.enableDelayed(10); //good for 9600 baud
-    mavlinkGetMessagesTask.enableDelayed(80);
+    //mavlinkGetMessagesTask.enableDelayed(80);
+    mavlinkGetMessagesTask.enableDelayed(40);
     Serial.println("<<<mavlinkGetMessages");
 }
 
