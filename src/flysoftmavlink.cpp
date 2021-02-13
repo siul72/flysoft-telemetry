@@ -126,6 +126,28 @@ void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, String *f){
             obj["onboard_control_sensors_present"] = sys_status.onboard_control_sensors_present;
             obj["onboard_control_sensors_enabled"] = sys_status.onboard_control_sensors_enabled;
         break;
+
+        //<message id="24" name="GPS_RAW_INT">
+        case MAVLINK_MSG_ID_GPS_RAW_INT:
+            mavlink_gps_raw_int_t gps_raw_int;
+            mavlink_msg_gps_raw_int_decode(&msg, &gps_raw_int);
+            obj = doc.createNestedObject("gps_raw_int");
+            obj["time_usec"] = static_cast<u_long>(gps_raw_int.time_usec);
+            obj["fix_type"] = gps_raw_int.fix_type;
+            obj["satellites_visible"] = gps_raw_int.satellites_visible;
+            obj["alt"] = gps_raw_int.alt;
+            obj["lat"] = gps_raw_int.lat;
+            obj["lon"] = gps_raw_int.lon;
+            obj["vel"] = gps_raw_int.vel;
+            obj["cog"] = gps_raw_int.cog;
+            obj["eph"] = gps_raw_int.eph;
+            obj["h_acc"] = gps_raw_int.h_acc;
+            obj["v_acc"] = gps_raw_int.v_acc;
+            obj["hdg_acc"] = gps_raw_int.hdg_acc;
+            obj["vel_acc"] = gps_raw_int.vel_acc;
+            obj["alt_ellipsoid"] = gps_raw_int.alt_ellipsoid;
+
+        break;
         //<message id="29" name="SCALED_PRESSURE">
         case MAVLINK_MSG_ID_SCALED_PRESSURE:
             mavlink_scaled_pressure_t scaled_pressure;
@@ -149,6 +171,21 @@ void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, String *f){
             obj["pitchspeed"] = attitude.pitchspeed;
             obj["yawspeed"] = attitude.yawspeed;
         break;
+        //<message id="33" name="GLOBAL_POSITION_INT">
+        case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+            mavlink_global_position_int_t global_position_int;
+            mavlink_msg_global_position_int_decode(&msg, &global_position_int);
+            obj = doc.createNestedObject("global_position_int");
+            obj["time_boot_ms"] = global_position_int.time_boot_ms;
+            obj["vx"] = global_position_int.vx;
+            obj["vy"] = global_position_int.vy;
+            obj["vz"] = global_position_int.vz;
+            obj["alt"] = global_position_int.alt;
+            obj["hdg"] = global_position_int.hdg;
+            obj["lat"] = global_position_int.lat;
+            obj["lon"] = global_position_int.lon;
+            obj["relative_alt"] = global_position_int.relative_alt;
+        break;
         //<message id="35" name="RC_CHANNELS_RAW">
         case MAVLINK_MSG_ID_RC_CHANNELS_RAW:
             mavlink_rc_channels_raw_t rc_channels_raw;
@@ -165,6 +202,17 @@ void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, String *f){
             obj["chan7_raw"] = rc_channels_raw.chan7_raw;
             obj["chan8_raw"] = rc_channels_raw.chan8_raw;
         break;
+        //<message id="49" name="GPS_GLOBAL_ORIGIN">
+        case MAVLINK_MSG_ID_GPS_GLOBAL_ORIGIN:
+            mavlink_gps_global_origin_t gps_global_origin;
+            mavlink_msg_gps_global_origin_decode(&msg, &gps_global_origin);
+            obj = doc.createNestedObject("gps_global_origin");
+            obj["time_usec"] = static_cast<ulong>(gps_global_origin.time_usec);
+            obj["altitude"] = gps_global_origin.altitude;
+            obj["latitude"] = gps_global_origin.latitude;
+            obj["longitude"] = gps_global_origin.longitude;
+        break;
+
         //<message id="74" name="VFR_HUD">
         case MAVLINK_MSG_ID_VFR_HUD:
             mavlink_vfr_hud_t vfr_hud;
