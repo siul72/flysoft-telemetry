@@ -77,7 +77,8 @@ DEFINES += "VTABLES_IN_FLASH"
 
 OTHER_FILES += platformio.ini
 
-HEADERS += src/flysoftmavlink.h
+HEADERS += src/flysoftmavlink.h \
+    src/mqtt_message.h
 SOURCES += src/utils.cpp
 HEADERS += src/utils.h
 SOURCES += src/flysoftmavlink.cpp

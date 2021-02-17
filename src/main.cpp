@@ -8,6 +8,8 @@
 #define  LED_WATCHDOG 2
 #define  MAVLINK_RX_PIN 4 //D2 on WeMos board
 #define  MAVLINK_TX_PIN 16 //D0 on WeMos board
+#define  MAVLINK_BAUDRATE 2400
+#define  SERIAL_BAUDRATE 2400
 
 void saveParamCallback();
 void consoleThread();
@@ -27,7 +29,7 @@ Task mqttReconnectTask(1000, TASK_ONCE, &connectToMqtt);
 Task readMavlinkPortTask(100, TASK_FOREVER, &mavlinkThread);
 Task mavlinkGetMessagesTask(10, TASK_FOREVER, &mavlinkGetMessages);
 
-FlysoftMavlink mav = FlysoftMavlink(MAVLINK_RX_PIN, MAVLINK_TX_PIN,2400);
+FlysoftMavlink mav = FlysoftMavlink(MAVLINK_RX_PIN, MAVLINK_TX_PIN, MAVLINK_BAUDRATE);
 
 WiFiManager wm;
 WiFiManagerParameter mqtt_port_param; // global param ( for non blocking w params )
@@ -124,13 +126,13 @@ void onMqttPublish(uint16_t packetId) {
   Serial.println(packetId);
 }
 
-void mqttPublish(String payload) {
+void mqttPublish(String topic, String payload) {
 
   if(!mqttClient.connected()){
     return;
   }
 
-  mqttClient.publish("flysoft/telemetry/mavlink", 0, true, payload.c_str());
+  mqttClient.publish(topic.c_str(), 0, true, payload.c_str());
 
 }
 
@@ -140,7 +142,8 @@ void mqttPublish(String payload) {
 void toggleLed(){
   digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
   String payload = "HB";
-  mqttPublish(payload);
+  String topic = "flysoft/telemetry/heartbeat";
+  mqttPublish(topic, payload);
 }
 
 void connectToMqtt() {
@@ -255,11 +258,11 @@ void mavlinkThread() {
 void mavlinkGetMessages(){
     Serial.println(">>>mavlinkGetMessages");
     mavlinkGetMessagesTask.disable();
-    std::vector<String*> messages;
+    std::vector<MqttMessage*> messages;
     mav.getMessages(&messages);
     if (messages.size() >0){
-        for(String* f : messages){
-            mqttPublish(*f);
+        for(MqttMessage* f : messages){
+            mqttPublish(f->topic, f->payload);
             delete f;
         }
         messages.clear();
@@ -348,7 +351,7 @@ void setup() {
        pinMode(MAVLINK_RX_PIN, INPUT);
        pinMode(MAVLINK_TX_PIN, OUTPUT);
        digitalWrite(LED_WATCHDOG, !digitalRead(LED_WATCHDOG));
-       Serial.begin(115200);
+       Serial.begin(SERIAL_BAUDRATE);
 
        Serial.println("start logging");
 

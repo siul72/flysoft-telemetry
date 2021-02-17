@@ -10,6 +10,7 @@
 #include <ArduinoJson.h>
 #include "queue.h"
 #include "utils.h"
+#include "mqtt_message.h"
 
 class FlysoftMavlink
 {
@@ -18,12 +19,12 @@ public:
     ~FlysoftMavlink();
     bool begin();
     void getStream();
-    void getMessages(std::vector<String*> *list);
+    void getMessages(std::vector<MqttMessage*> *list);
 private:
     SoftwareSerial* _myserial;
     char log_msg[1024];
-    Queue<String*> myMavlinkQueue;
-    void parseMavlinkMessage(mavlink_message_t msg, String *f);
+    Queue<MqttMessage*> myMavlinkQueue;
+    void parseMavlinkMessage(mavlink_message_t msg, MqttMessage *f);
     mavlink_message_t my_mavlink_msg;
     mavlink_status_t status1;
     double MILLIG_TO_MS2;

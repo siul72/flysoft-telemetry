@@ -31,7 +31,7 @@ void FlysoftMavlink::getStream(){
     char buffer[size];
     //mavlink_message_t my_mavlink_msg;
     //String debug;
-    String* frame = NULL;
+    MqttMessage* frame = NULL;
 
     while (_myserial->available() > 0){
         //Serial.println("readBytes");
@@ -51,7 +51,7 @@ void FlysoftMavlink::getStream(){
                     continue;
                 case MAVLINK_FRAMING_OK:
                     //Serial.println("Message Parsing Done with OK!");
-                    frame = new String();
+                    frame = new MqttMessage();
                     parseMavlinkMessage(my_mavlink_msg, frame);
                     myMavlinkQueue.push(frame);
                 break;
@@ -73,13 +73,13 @@ void FlysoftMavlink::getStream(){
 
 }
 
-void FlysoftMavlink::getMessages(std::vector<String*> *list){
+void FlysoftMavlink::getMessages(std::vector<MqttMessage*> *list){
 
     int x = myMavlinkQueue.count();
     sprintf(log_msg, "pop=%d messages", x);
     Serial.println(log_msg);
     while(myMavlinkQueue.count() > 0 ){
-        String *frame = myMavlinkQueue.pop();
+        MqttMessage *frame = myMavlinkQueue.pop();
         //sprintf(log_msg, "pop=%s", frame->c_str());
         //Serial.println(log_msg);
         list->push_back(frame);
@@ -87,7 +87,7 @@ void FlysoftMavlink::getMessages(std::vector<String*> *list){
 
 }
 
-void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, String *f){
+void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, MqttMessage *f){
 
 
     char str[18] = "";
@@ -257,8 +257,8 @@ void FlysoftMavlink::parseMavlinkMessage(mavlink_message_t msg, String *f){
 
     }
 
-    serializeJson(doc, *f);
-
-
+    serializeJson(doc, f->payload);
+    sprintf(log_msg, "flysoft/telemetry/mavlink/message/%d", msg.msgid);
+    f->topic = f->topic + log_msg;
 
 }
